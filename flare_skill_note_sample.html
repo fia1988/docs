@@ -12,6 +12,30 @@
         th { background-color: #f2f2f2; }
         .stats { background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
         .nav-link { display: inline-block; margin-top: 20px; }
+        .grade-WORLD { background-color: #FFE0B2; } /* 薄いオレンジ */
+        .grade-SUN\+\+\+ { background-color: #FFA500; } /* オレンジ (変更なし) */
+        .grade-SUN\+\+ { background-color: #FFB841; } /* やや薄いオレンジ */
+        .grade-SUN\+ { background-color: #FFCB82; } /* さらに薄いオレンジ */
+        .grade-SUN { background-color: #FFDDB3; } /* 最も薄いオレンジ */
+        .grade-NEPTUNE\+\+\+ { background-color: #B3E0FF; } /* 薄い青 */
+        .grade-NEPTUNE\+\+ { background-color: #87CEFA; } /* ライトスカイブルー */
+        .grade-NEPTUNE\+ { background-color: #6CB5F4; }
+        .grade-NEPTUNE { background-color: #4BA5FF; }
+        .grade-URANUS\+\+\+ { background-color: #98FB98; } /* パレグリーン */
+        .grade-URANUS\+\+ { background-color: #90EE90; } /* ライトグリーン */
+        .grade-URANUS\+ { background-color: #7CFD7C; }
+        .grade-URANUS { background-color: #66EF66; }
+        .grade-SATURN { background-color: #E6E6FA; } /* ラベンダー */
+        .grade-JUPITER { background-color: #FFC0CB; } /* ピンク */
+        .grade-MARS { background-color: #FFB6C1; } /* ライトピンク */
+        .grade-EARTH { background-color: #90EE90; } /* ライトグリーン */
+        .grade-VENUS { background-color: #DDA0DD; } /* プラム */
+        .grade-MERCURY { background-color: #D3D3D3; } /* ライトグレー */
+        .grade-NONE { background-color: #F5F5F5; } /* ホワイトスモーク */
+        
+        /* テーブルの見た目を改善 */
+        table { border: 2px solid #ddd; }
+        th { background-color: #4CAF50; color: white; }
     </style>
 </head>
 <body>
@@ -126,6 +150,37 @@
             ]
         };
 
+        const gradeThresholds = [
+            { grade: 'WORLD', threshold: 1000 },
+            { grade: 'SUN+++', threshold: 959 },
+            { grade: 'SUN++', threshold: 917 },
+            { grade: 'SUN+', threshold: 875 },
+            { grade: 'SUN', threshold: 834 },
+            { grade: 'NEPTUNE+++', threshold: 792 },
+            { grade: 'NEPTUNE++', threshold: 750 },
+            { grade: 'NEPTUNE+', threshold: 709 },
+            { grade: 'NEPTUNE', threshold: 667 },
+            { grade: 'URANUS+++', threshold: 625 },
+            { grade: 'URANUS++', threshold: 584 },
+            { grade: 'URANUS+', threshold: 542 },
+            { grade: 'URANUS', threshold: 500 },
+            { grade: 'SATURN', threshold: 450 },
+            { grade: 'JUPITER', threshold: 400 },
+            { grade: 'MARS', threshold: 350 },
+            { grade: 'EARTH', threshold: 300 },
+            { grade: 'VENUS', threshold: 250 },
+            { grade: 'MERCURY', threshold: 200 },
+        ];
+
+        function getSongGrade(flareSkill) {
+            for (let gradeInfo of gradeThresholds) {
+                if (flareSkill >= gradeInfo.threshold) {
+                    return gradeInfo.grade;
+                }
+            }
+            return 'NONE';
+        }
+
         function calculateCategoryTotal(category) {
             return songs[category]
                 .sort((a, b) => b.flareSkill - a.flareSkill)
@@ -134,37 +189,28 @@
         }
 
         function calculateGrade(total) {
-            if (total >= 90000) return 'WORLD';
-            if (total >= 86250) return 'SUN+++';
-            if (total >= 82500) return 'SUN++';
-            if (total >= 78750) return 'SUN+';
-            if (total >= 75000) return 'SUN';
-            if (total >= 71250) return 'NEPTUNE+++';
-            if (total >= 67500) return 'NEPTUNE++';
-            if (total >= 63750) return 'NEPTUNE+';
-            if (total >= 60000) return 'NEPTUNE';
-            if (total >= 56250) return 'URANUS+++';
-            if (total >= 52500) return 'URANUS++';
-            if (total >= 48750) return 'URANUS+';
-            if (total >= 45000) return 'URANUS';
-            return 'NONE';
+            const averageSkill = total / 90;
+            return getSongGrade(averageSkill);
         }
 
         function renderTable(category) {
             const total = calculateCategoryTotal(category);
             let html = `<h2>${category} - トータルフレアスキル: ${total}</h2>
-                        <table><thead><tr><th>曲名</th><th>レベル</th><th>フレアランク</th><th>スコア</th><th>フレアスキル</th></tr></thead><tbody>`;
+                        <table><thead><tr><th>曲名</th><th>レベル</th><th>フレアランク</th><th>スコア</th><th>フレアスキル</th><th>相当グレード</th></tr></thead><tbody>`;
             
             songs[category]
                 .sort((a, b) => b.flareSkill - a.flareSkill)
                 .slice(0, 30)
                 .forEach(song => {
-                    html += `<tr>
+                    const songGrade = getSongGrade(song.flareSkill);
+                    // ここを修正：クラス名の生成方法を変更
+                    html += `<tr class="grade-${songGrade}">
                         <td>${song.title}</td>
                         <td>${song.level}</td>
                         <td>${song.flareRank}</td>
                         <td>${song.score}</td>
                         <td>${song.flareSkill}</td>
+                        <td>${songGrade}</td>
                     </tr>`;
                 });
             html += '</tbody></table>';
